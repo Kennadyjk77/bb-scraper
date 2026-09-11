@@ -18,6 +18,9 @@ app.get('/get-stream', async (req, res) => {
         
         await page.goto('https://stream2.zoloj.com/player?lang=tamil', { waitUntil: 'networkidle2', timeout: 60000 });
         
+        // வீடியோ அல்லது ஐபிரேம் லோட் ஆவதற்காக 4 விநாடிகள் காத்திருத்தல்
+        await new Promise(resolve => setTimeout(resolve, 4000));
+
         const streamUrl = await page.evaluate(() => {
             const iframe = document.querySelector('iframe');
             const video = document.querySelector('video');
