@@ -1,37 +1,33 @@
 const express = require('express');
-const axios = require('axios');
-const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
 const cors = require('cors');
 
 const app = express();
 app.use(cors());
 
 app.get('/get-stream', async (req, res) => {
+    let browser;
     try {
-        // உண்மையான பிரவுசர் போல காட்டி 403 பிழையைத் தவிர்த்தல்
-        const response = await axios.get('https://stream2.zoloj.com/player?lang=tamil', {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Referer': 'https://stream2.zoloj.com/'
-            }
+        browser = await puppeteer.launch({ 
+            headless: true,
+            executablePath: '/usr/bin/google-chrome-stable',
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+        });
+        const page = await browser.newPage();
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        
+        await page.goto('https://stream2.zoloj.com/player?lang=tamil', { waitUntil: 'networkidle2', timeout: 60000 });
+        
+        const streamUrl = await page.evaluate(() => {
+            const iframe = document.querySelector('iframe');
+            const video = document.querySelector('video');
+            return iframe ? iframe.src : (video ? video.src : window.location.href);
         });
 
-        const $ = cheerio.load(response.data);
-        
-        let streamUrl = '';
-        const iframe = $('iframe').attr('src');
-        const video = $('video').attr('src');
-        
-        if (iframe) {
-            streamUrl = iframe;
-        } else if (video) {
-            streamUrl = video;
-        } else {
-            streamUrl = 'https://stream2.zoloj.com/player?lang=tamil';
-        }
-
+        await browser.close();
         res.json({ success: true, url: streamUrl });
     } catch (error) {
+        if (browser) await browser.close();
         res.status(500).json({ success: false, error: error.message });
     }
 });
