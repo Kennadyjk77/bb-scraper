@@ -8,8 +8,15 @@ app.use(cors());
 
 app.get('/get-stream', async (req, res) => {
     try {
-        const { data } = await axios.get('https://stream2.zoloj.com/player?lang=tamil');
-        const $ = cheerio.load(data);
+        // உண்மையான பிரவுசர் போல காட்டி 403 பிழையைத் தவிர்த்தல்
+        const response = await axios.get('https://stream2.zoloj.com/player?lang=tamil', {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Referer': 'https://stream2.zoloj.com/'
+            }
+        });
+
+        const $ = cheerio.load(response.data);
         
         let streamUrl = '';
         const iframe = $('iframe').attr('src');
