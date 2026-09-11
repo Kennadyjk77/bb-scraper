@@ -26,7 +26,7 @@ app.get('/get-stream', async (req, res) => {
             }
         });
 
-        await page.goto('https://www.tamiltvserial.com/all-bigg-boss-live-24-7/', { waitUntil: 'networkidle2', timeout: 60000 });
+        await page.goto('https://stream2.zoloj.com/stream/tamil.m3u8?sid=9de85460e2cfab3cdb4b9fec29911afe57ca5a7191b2f1b16b52d059974c894c', { waitUntil: 'networkidle2', timeout: 60000 });
         
         // தளம் முழுமையாக லோட் ஆகி ஐபிரேம் வெளிவர 6 விநாடிகள் காத்திருத்தல்
         await new Promise(resolve => setTimeout(resolve, 6000));
