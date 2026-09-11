@@ -18,24 +18,34 @@ app.get('/get-stream', async (req, res) => {
         
         let liveStreamUrl = '';
         
-        // நெட்வொர்க்கில் ரகசியமாகச் செல்லும் .m3u8 லிங்கை உறுதியாகப் பிடித்தல்
+        // நெட்வொர்க்கில் செல்லும் .m3u8 லிங்கைத் தீவிரமாகத் தேடுதல்
         page.on('request', (request) => {
             const url = request.url();
-            if (url.includes('.m3u8')) {
+            if (url.includes('.m3u8') || url.includes('playlist')) {
                 liveStreamUrl = url;
             }
         });
 
         await page.goto('https://stream2.zoloj.com/player?lang=tamil', { waitUntil: 'networkidle2', timeout: 60000 });
         
-        // பிளேயர் லோட் ஆகி .m3u8 ரெக்வெஸ்ட் போக 8 விநாடிகள் காத்திருத்தல்
-        await new Promise(resolve => setTimeout(resolve, 8000));
+        // பிளேயர் லோட் ஆக சிறிது நேரம் காத்திருத்தல்
+        await new Promise(resolve => setTimeout(resolve, 4000));
 
-        // ஒருவேளை நெட்வொர்க்கில் கிடைக்கவில்லை என்றால் பேஜில் உள்ள சோர்ஸைத் தேடுதல்
+        // பிளேயர் மீது கிளிக் செய்து வீடியோவை வரவழைத்தல் (Play Trigger)
+        try {
+            await page.mouse.click(300, 300);
+        } catch (e) {}
+
+        // மீண்டும் சில விநாடிகள் காத்திருத்தல்
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        // நெட்வொர்க்கில் கிடைக்கவில்லை என்றால் ஐபிரேம் அல்லது வீடியோ டேக்கைச் சோதித்தல்
         if (!liveStreamUrl) {
             liveStreamUrl = await page.evaluate(() => {
+                const iframe = document.querySelector('iframe');
                 const video = document.querySelector('video');
                 const source = document.querySelector('source');
+                if (iframe && iframe.src) return iframe.src;
                 if (video && video.src) return video.src;
                 if (source && source.src) return source.src;
                 return '';
