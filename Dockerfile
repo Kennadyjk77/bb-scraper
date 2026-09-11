@@ -1,4 +1,8 @@
 FROM node:18-slim
+
+# Puppeteer தனியாக பிரவுசரை டவுன்லோட் செய்வதைத் தடுத்தல் (Freezing-ஐ தவிர்க்க)
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
